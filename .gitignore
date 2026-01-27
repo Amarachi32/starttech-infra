@@ -1,0 +1,7 @@
+# Ignore local terraform state and vars
+.terraform/
+*.tfstate
+*.tfstate.backup
+terraform.tfvars
+# Ignore any other var files
+*.tfvars

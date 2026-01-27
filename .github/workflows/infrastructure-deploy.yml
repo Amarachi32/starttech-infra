@@ -20,6 +20,8 @@ jobs:
           aws-region: us-east-1
       - name: Terraform Init & Apply
         working-directory: ./terraform
+        env:
+          TF_VAR_mongodb_uri: ${{ secrets.MONGODB_URI }} # Maps secret to Terraform variable
         run: |
           terraform init
           terraform apply -auto-approve
