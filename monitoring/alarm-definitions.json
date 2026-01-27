@@ -1,0 +1,24 @@
+[
+  {
+    "AlarmName": "High-CPU-Usage-Warning",
+    "MetricName": "CPUUtilization",
+    "Namespace": "AWS/EC2",
+    "Threshold": 70.0,
+    "ComparisonOperator": "GreaterThanOrEqualToThreshold",
+    "EvaluationPeriods": 2,
+    "Period": 300,
+    "Statistic": "Average",
+    "AlarmDescription": "Triggered if CPU exceeds 70% for 10 minutes"
+  },
+  {
+    "AlarmName": "Backend-5XX-Errors",
+    "MetricName": "HTTPCode_Target_5XX_Count",
+    "Namespace": "AWS/ApplicationELB",
+    "Threshold": 5.0,
+    "ComparisonOperator": "GreaterThanThreshold",
+    "EvaluationPeriods": 1,
+    "Period": 60,
+    "Statistic": "Sum",
+    "AlarmDescription": "Critical: Backend is failing requests"
+  }
+]

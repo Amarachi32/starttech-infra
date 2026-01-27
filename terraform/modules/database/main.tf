@@ -2,21 +2,31 @@
 resource "aws_security_group" "redis_sg" {
   name        = "${var.app_name}-redis-sg"
   vpc_id      = var.vpc_id
-  description = "Allow traffic from backend to Redis"
+  # description = "Allow traffic from backend to Redis"
 
-  ingress {
-    from_port       = 6379
-    to_port         = 6379
-    protocol        = "tcp"
-    security_groups = [var.backend_sg_id] # Only allows the Backend to talk to Redis
-  }
+  # ingress {
+  #   from_port       = 6379
+  #   to_port         = 6379
+  #   protocol        = "tcp"
+  #   security_groups = [var.backend_sg_id] # Only allows the Backend to talk to Redis
+  # }
 
-  egress {
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    cidr_blocks = ["0.0.0.0/0"]
-  }
+  # egress {
+  #   from_port   = 0
+  #   to_port     = 0
+  #   protocol    = "-1"
+  #   cidr_blocks = ["0.0.0.0/0"]
+  # }
+}
+
+
+resource "aws_security_group_rule" "allow_backend_to_redis" {
+  type                     = "ingress"
+  from_port                = 6379
+  to_port                  = 6379
+  protocol                 = "tcp"
+  security_group_id        = aws_security_group.redis_sg.id
+  source_security_group_id = var.backend_sg_id # This breaks the cycle!
 }
 
 # Redis Subnet Group

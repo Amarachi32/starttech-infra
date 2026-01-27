@@ -3,7 +3,7 @@ terraform {
     aws = { source = "hashicorp/aws", version = "~> 5.0" }
   }
   backend "s3" { # Store state in S3 so team can collaborate
-    bucket = "starttech-terraform-state"
+    bucket = "starttech-statebucket"
     key    = "prod/terraform.tfstate"
     region = "us-east-1"
   }
@@ -23,7 +23,7 @@ module "monitoring" {
   source   = "./modules/monitoring"
   app_name = var.app_name
   # These link the alarms to the resources created in 'compute'
-  as_group_name  = module.compute.asg_name
+  asg_name = module.compute.asg_name
   alb_arn_suffix = module.compute.alb_arn_suffix
 }
 
@@ -40,7 +40,7 @@ module "database" {
   app_name        = var.app_name
   vpc_id          = module.networking.vpc_id
   private_subnets = module.networking.private_subnets
-  backend_sg_id   = module.compute.backend_sg_id # Security dependency - Getting SG from compute
+  backend_sg_id   = module.networking.backend_sg_id # Security dependency - Getting SG from compute
 }
 
 # 5. Compute: The Application Layer
@@ -60,4 +60,9 @@ module "compute" {
   
   # Input from Variables (Secret)
   mongodb_uri        = var.mongodb_uri
+  alb_sg_id                 = module.networking.alb_sg_id
+  backend_sg_id             = module.networking.backend_sg_id
+  iam_instance_profile_name = "starttech-instance-profile" # or from an iam module
+  github_username           = "Amarachi32"
+  github_repo               = "starttech-app"
 }

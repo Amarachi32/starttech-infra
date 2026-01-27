@@ -1,0 +1,13 @@
+# Query 1: Find the top 20 most recent errors in the Go application
+fields @timestamp, @message
+| filter @message like /error/ or @message like /Error/
+| sort @timestamp desc
+| limit 20
+
+# Query 2: Calculate requests per minute to see traffic spikes
+stats count(*) by bin(1m)
+
+# Query 3: Find slow MongoDB or Redis operations (assuming your logs include duration)
+fields @timestamp, duration, message
+| filter duration > 500
+| sort duration desc

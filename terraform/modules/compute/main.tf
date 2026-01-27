@@ -1,30 +1,23 @@
-# 1. Application Load Balancer (Entry Point)
-resource "aws_lb" "api" {
-  name               = "starttech-alb"
+resource "aws_lb" "main" {
+  name               = "${var.app_name}-alb"
+  internal           = false
   load_balancer_type = "application"
-  subnets            = var.public_subnets
   security_groups    = [var.alb_sg_id]
+  subnets            = var.public_subnets # ALB needs at least 2 public subnets
+
+  tags = { Name = "${var.app_name}-alb" }
 }
 
-# 2. Target Group (Where the ALB sends traffic)
+#2 You'll also need a Target Group and Listener to make it functional
 resource "aws_lb_target_group" "app_tg" {
-  name     = "starttech-app-tg"
-  port     = 8080 # Your Go app port
+  name     = "${var.app_name}-tg"
+  port     = 8080
   protocol = "HTTP"
   vpc_id   = var.vpc_id
-
-  health_check {
-    path                = "/health" # Ensure your Go app has this route!
-    interval            = 30
-    timeout             = 5
-    healthy_threshold   = 2
-    unhealthy_threshold = 2
-  }
 }
-
-# 3. Listener (Listens on Port 80 and forwards to Target Group)
+#3
 resource "aws_lb_listener" "http" {
-  load_balancer_arn = aws_lb.api.arn
+  load_balancer_arn = aws_lb.main.arn
   port              = "80"
   protocol          = "HTTP"
 
@@ -49,7 +42,26 @@ resource "aws_autoscaling_group" "app_asg" {
   }
 }
 
-# 5. Launch Template (The Blueprint for EC2)
+# # 5. Launch Template (The Blueprint for EC2)
+# resource "aws_launch_template" "app_lt" {
+#   name_prefix   = "starttech-app-"
+#   image_id      = var.ami_id
+#   instance_type = "t3.micro"
+
+#   iam_instance_profile { name = var.iam_instance_profile_name }
+
+#   user_data = base64encode(<<-EOF
+#               #!/bin/bash
+#               echo "MONGODB_URI=${var.mongodb_uri}" >> /etc/environment
+#               echo "REDIS_URL=${var.redis_endpoint}:6379" >> /etc/environment
+#               yum update -y
+#               amazon-linux-extras install docker -y
+#               service docker start
+#               EOF
+#   )
+# }
+
+# 5. Launch Template (Optimized for GHCR)
 resource "aws_launch_template" "app_lt" {
   name_prefix   = "starttech-app-"
   image_id      = var.ami_id
@@ -57,13 +69,38 @@ resource "aws_launch_template" "app_lt" {
 
   iam_instance_profile { name = var.iam_instance_profile_name }
 
+  # Ensure the instance uses the correct Security Group
+  network_interfaces {
+    associate_public_ip_address = true
+    security_groups             = [var.backend_sg_id]
+  }
+
   user_data = base64encode(<<-EOF
               #!/bin/bash
+              # 1. Set Environment Variables
               echo "MONGODB_URI=${var.mongodb_uri}" >> /etc/environment
               echo "REDIS_URL=${var.redis_endpoint}:6379" >> /etc/environment
+              source /etc/environment
+
+              # 2. Install and Start Docker
               yum update -y
               amazon-linux-extras install docker -y
               service docker start
+              systemctl enable docker
+              usermod -a -G docker ec2-user
+
+              # 3. Login to GHCR 
+              # NOTE: Replace <GITHUB_PAT> with your secret or make the package public
+              # docker pull ghcr.io/${var.github_username}/${var.github_repo}/backend:latest
+              
+              # 4. Run the Container
+              docker run -d \
+                --name backend-api \
+                --restart always \
+                -p 8080:8080 \
+                -e MONGODB_URI="$MONGODB_URI" \
+                -e REDIS_URL="$REDIS_URL" \
+                ghcr.io/${var.github_username}/${var.github_repo}/backend:latest
               EOF
   )
 }
