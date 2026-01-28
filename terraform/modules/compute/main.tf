@@ -78,6 +78,7 @@ resource "aws_launch_template" "app_lt" {
   user_data = base64encode(<<-EOF
                 #!/bin/bash
                 # 1. Set Environment Variables
+                set -x  # This prints every command to the logs for debugging
                 echo "MONGODB_URI=${var.mongodb_uri}" >> /etc/environment
                 echo "REDIS_URL=${var.redis_endpoint}:6379" >> /etc/environment
                 source /etc/environment
