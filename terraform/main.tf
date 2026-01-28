@@ -18,20 +18,15 @@ module "networking" {
   vpc_cidr = var.vpc_cidr
 }
 
-# 2. Monitoring: The Eyes
-module "monitoring" {
-  source   = "./modules/monitoring"
-  app_name = var.app_name
-  # These link the alarms to the resources created in 'compute'
-  asg_name = module.compute.asg_name
-  alb_arn_suffix = module.compute.alb_arn_suffix
-}
+
 
 # 3. Storage: The Frontend
 module "storage" {
   source      = "./modules/storage"
   #bucket_name = "starttech-frontend-prod"
-  bucket_name = "${var.app_name}-frontend-prod"
+  bucket_name = "${var.app_name}-frontend-prod-32"
+  #bucket_name = "starttech-statebucket"
+
 }
 
 # 4. Database: The Stateful Layer (Redis)
@@ -53,8 +48,9 @@ module "compute" {
   instance_type      = "t3.micro"
   
   # Inputs from Monitoring
-  log_group_name     = module.monitoring.log_group_name
-  
+  log_group_name     = "/aws/ec2/${var.app_name}-backend"
+    #log_group_name     = module.monitoring.log_group_name
+
   # Inputs from Database (The Bridge)
   redis_endpoint     = module.database.redis_endpoint
   
@@ -62,7 +58,23 @@ module "compute" {
   mongodb_uri        = var.mongodb_uri
   alb_sg_id                 = module.networking.alb_sg_id
   backend_sg_id             = module.networking.backend_sg_id
-  iam_instance_profile_name = "starttech-instance-profile" # or from an iam module
+ # iam_instance_profile_name = "starttech-instance-profile" # or from an iam module
   github_username           = "Amarachi32"
   github_repo               = "starttech-app"
+  #iam_instance_profile_name = aws_iam_instance_profile.app_instance_profile.name
+  iam_instance_profile_name = module.iam.instance_profile_name
+}
+
+module "iam" {
+  source             = "./modules/iam"
+  #app_name           = var.app_name
+}
+
+# 2. Monitoring: The Eyes
+module "monitoring" {
+  source   = "./modules/monitoring"
+  app_name = var.app_name
+  # These link the alarms to the resources created in 'compute'
+  asg_name = module.compute.asg_name
+  alb_arn_suffix = module.compute.alb_arn_suffix
 }
