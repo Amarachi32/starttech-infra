@@ -1,6 +1,6 @@
 aws_region              = "us-east-1"
 app_name                = "starttech"
-mongodb_uri             = "mongodb+srv://prptamarachi:prptamarachi@cluster0.ly2lr6y.mongodb.net/?appName=Cluster0"
+mongodb_uri             = "mongodb+srv://prptamarachi:prptamarachi@cluster0.ly2lr6y.mongodb.net/altschool_proj?retryWrites=true&w=majority"
 redis_node_type         = "cache.t3.micro"
 atlas_project_id        = "YOUR_ATLAS_PROJECT_ID"
 environment = "production"
