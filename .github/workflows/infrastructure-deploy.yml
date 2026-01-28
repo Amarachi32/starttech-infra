@@ -18,6 +18,12 @@ jobs:
         with:
           role-to-assume: ${{ secrets.AWS_ROLE_TO_ASSUME }}
           aws-region: us-east-1
+
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.7.0" # Or your preferred version
+
       - name: Terraform Init & Apply
         working-directory: ./terraform
         env:
