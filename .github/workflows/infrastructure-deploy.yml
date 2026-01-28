@@ -28,6 +28,10 @@ jobs:
         working-directory: ./terraform
         env:
           TF_VAR_mongodb_uri: ${{ secrets.MONGODB_URI }} # Maps secret to Terraform variable
+          TF_VAR_ami_id: "ami-0532be01f26a3de55" # Or use ${{ vars.AMI_ID }} if stored in GitHub
+          TF_VAR_aws_region: "us-east-1"
+          TF_VAR_vpc_cidr: "10.0.0.0/16"
+          TF_VAR_app_name: "starttech"
         run: |
           terraform init
           terraform apply -auto-approve
