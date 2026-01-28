@@ -45,10 +45,12 @@ variable "iam_instance_profile_name" {
 
 variable "github_username" {
   type = string
+  default = "Amarachi32"
 }
 
 variable "github_repo" {
   type = string
+  default = "starttech-app"
 }
 variable "instance_type" {
   type    = string

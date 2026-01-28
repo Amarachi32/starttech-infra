@@ -76,31 +76,32 @@ resource "aws_launch_template" "app_lt" {
   }
 
   user_data = base64encode(<<-EOF
-              #!/bin/bash
-              # 1. Set Environment Variables
-              echo "MONGODB_URI=${var.mongodb_uri}" >> /etc/environment
-              echo "REDIS_URL=${var.redis_endpoint}:6379" >> /etc/environment
-              source /etc/environment
+                #!/bin/bash
+                # 1. Set Environment Variables
+                echo "MONGODB_URI=${var.mongodb_uri}" >> /etc/environment
+                echo "REDIS_URL=${var.redis_endpoint}:6379" >> /etc/environment
+                source /etc/environment
 
-              # 2. Install and Start Docker
-              yum update -y
-              amazon-linux-extras install docker -y
-              service docker start
-              systemctl enable docker
-              usermod -a -G docker ec2-user
+                # 2. Install and Start Docker
+                yum update -y
+                # Use the modern way for Amazon Linux 2023/2022
+                yum install -y docker
+                systemctl start docker
+                systemctl enable docker
+                usermod -a -G docker ec2-user
 
-              # 3. Login to GHCR 
-              # NOTE: Replace <GITHUB_PAT> with your secret or make the package public
-              # docker pull ghcr.io/${var.github_username}/${var.github_repo}/backend:latest
-              
-              # 4. Run the Container
-              docker run -d \
-                --name backend-api \
-                --restart always \
-                -p 8080:8080 \
-                -e MONGODB_URI="$MONGODB_URI" \
-                -e REDIS_URL="$REDIS_URL" \
-                ghcr.io/${var.github_username}/${var.github_repo}/backend:latest
-              EOF
-  )
+                # 3. Pull the image (CRITICAL: Removed the '#' and fixed path)
+                # If your repo name in GHCR is 'backend', use this:
+                docker pull ghcr.io/${lower(var.github_username)}/${lower(var.github_repo)}/backend:latest
+                
+                # 4. Run the Container
+                docker run -d \
+                  --name backend-api \
+                  --restart always \
+                  -p 8080:8080 \
+                  -e MONGODB_URI="${var.mongodb_uri}" \
+                  -e REDIS_URL="${var.redis_endpoint}:6379" \
+                  ghcr.io/${lower(var.github_username)}/${lower(var.github_repo)}/backend:latest
+                EOF
+    )
 }
