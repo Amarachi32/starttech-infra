@@ -8,7 +8,7 @@ resource "aws_lb" "main" {
   tags = { Name = "${var.app_name}-alb" }
 }
 
-#2 You'll also need a Target Group and Listener to make it functional
+#2 also need a Target Group and Listener to make it functional
 resource "aws_lb_target_group" "app_tg" {
   name     = "${var.app_name}-tg"
   port     = 8080
