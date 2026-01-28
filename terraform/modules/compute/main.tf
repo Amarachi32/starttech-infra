@@ -99,6 +99,7 @@ resource "aws_launch_template" "app_lt" {
                   --name backend-api \
                   --restart always \
                   -p 8080:8080 \
+                  -e PORT=8080 \
                   -e MONGODB_URI="${var.mongodb_uri}" \
                   -e REDIS_URL="${var.redis_endpoint}:6379" \
                   ghcr.io/amarachi32/starttech-app/backend:latest
