@@ -22,7 +22,7 @@ resource "aws_iam_role" "github_actions" {
           StringLike = {
             "token.actions.githubusercontent.com:sub" : [
               "repo:Amarachi32/starttech-infra:*",
-              "repo:Amarachi32/much-to-do:*"
+              "repo:Amarachi32/starttech-app:*"
             ]
           },
           StringEquals = {
