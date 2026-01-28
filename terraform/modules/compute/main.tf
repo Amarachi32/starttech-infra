@@ -77,32 +77,31 @@ resource "aws_launch_template" "app_lt" {
 
   user_data = base64encode(<<-EOF
                 #!/bin/bash
-                # 1. Set Environment Variables
-                set -x  # This prints every command to the logs for debugging
+                # 1. Setup Environment
                 echo "MONGODB_URI=${var.mongodb_uri}" >> /etc/environment
                 echo "REDIS_URL=${var.redis_endpoint}:6379" >> /etc/environment
                 source /etc/environment
 
                 # 2. Install and Start Docker
                 yum update -y
-                # Use the modern way for Amazon Linux 2023/2022
                 yum install -y docker
                 systemctl start docker
                 systemctl enable docker
                 usermod -a -G docker ec2-user
 
-                # 3. Pull the image (CRITICAL: Removed the '#' and fixed path)
-                # If your repo name in GHCR is 'backend', use this:
-                docker pull ghcr.io/${lower(var.github_username)}/${lower(var.github_repo)}/backend:latest
-                
+                # 3. Pull the image (UNCOMMENTED AND FIXED)
+                # We use the exact path that worked on your laptop
+                docker pull ghcr.io/amarachi32/starttech-app/backend:latest
+
                 # 4. Run the Container
+                # -p 8080:8080 maps the ALB traffic to your Go app
                 docker run -d \
                   --name backend-api \
                   --restart always \
                   -p 8080:8080 \
                   -e MONGODB_URI="${var.mongodb_uri}" \
                   -e REDIS_URL="${var.redis_endpoint}:6379" \
-                  ghcr.io/${lower(var.github_username)}/${lower(var.github_repo)}/backend:latest
+                  ghcr.io/amarachi32/starttech-app/backend:latest
                 EOF
     )
 }
