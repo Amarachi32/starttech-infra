@@ -104,8 +104,8 @@ resource "aws_launch_template" "app_lt" {
       --restart always \
       -p 8080:8080 \
       -e PORT=8080 \
-      -e MONGODB_URI="${var.mongodb_uri}" \
-      -e REDIS_URL="${var.redis_endpoint}:6379" \
+      -e MONGODB_URI='${var.mongodb_uri}' \
+      -e REDIS_ADDR='${var.redis_endpoint}:6379' \
       ghcr.io/amarachi32/starttech-app/backend:latest
   EOF
   )
