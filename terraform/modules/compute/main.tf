@@ -33,17 +33,58 @@ resource "aws_lb_target_group" "app_tg" {
   }
 }
 
-# Listener
-resource "aws_lb_listener" "http" {
+# # Listener
+# resource "aws_lb_listener" "http" {
+#   load_balancer_arn = aws_lb.main.arn
+#   port              = 80
+#   protocol          = "HTTP"
+
+#   default_action {
+#     type             = "forward"
+#     target_group_arn = aws_lb_target_group.app_tg.arn
+#   }
+# }
+
+
+
+#
+
+# 1. Add the HTTPS Listener (to replace your manual console work)
+resource "aws_lb_listener" "https" {
   load_balancer_arn = aws_lb.main.arn
-  port              = 80
-  protocol          = "HTTP"
+  port              = 443
+  protocol          = "HTTPS"
+  ssl_policy        = "ELBSecurityPolicy-2016-08" # Standard AWS Policy
+  certificate_arn   = "arn:aws:acm:us-east-1:YOUR_ACCOUNT_ID:certificate/YOUR_CERT_ID"
 
   default_action {
     type             = "forward"
     target_group_arn = aws_lb_target_group.app_tg.arn
   }
 }
+
+# 2. Add the CORS Preflight Rule
+resource "aws_lb_listener_rule" "cors_preflight" {
+  listener_arn = aws_lb_listener.https.arn
+  priority     = 1
+
+  action {
+    type = "fixed-response"
+    fixed_response {
+      content_type = "text/plain"
+      message_body = "OK"
+      status_code  = "204"
+    }
+  }
+
+  condition {
+    http_request_method {
+      values = ["OPTIONS"]
+    }
+  }
+}
+
+
 
 # Auto Scaling Group
 resource "aws_autoscaling_group" "app_asg" {
