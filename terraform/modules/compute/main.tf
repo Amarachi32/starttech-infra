@@ -64,26 +64,26 @@ resource "aws_lb_listener" "https" {
   }
 }
 
-# 2. Add the CORS Preflight Rule
-resource "aws_lb_listener_rule" "cors_preflight" {
-  listener_arn = aws_lb_listener.https.arn
-  priority     = 1
+# # 2. Add the CORS Preflight Rule
+# resource "aws_lb_listener_rule" "cors_preflight" {
+#   listener_arn = aws_lb_listener.https.arn
+#   priority     = 1
 
-  action {
-    type = "fixed-response"
-    fixed_response {
-      content_type = "text/plain"
-      message_body = "OK"
-      status_code  = "204"
-    }
-  }
+#   action {
+#     type = "fixed-response"
+#     fixed_response {
+#       content_type = "text/plain"
+#       message_body = "OK"
+#       status_code  = "204"
+#     }
+#   }
 
-  condition {
-    http_request_method {
-      values = ["OPTIONS"]
-    }
-  }
-}
+#   condition {
+#     http_request_method {
+#       values = ["OPTIONS"]
+#     }
+#   }
+# }
 
 
 
