@@ -126,6 +126,7 @@ resource "aws_launch_template" "app_lt" {
   user_data = base64encode(<<-EOF
     #!/bin/bash
     # Setup Environment
+    export ALLOWED_ORIGINS="https://d3qh39lmclj4j6.cloudfront.net"
     echo "MONGODB_URI=${var.mongodb_uri}" >> /etc/environment
     echo "REDIS_URL=${var.redis_endpoint}:6379" >> /etc/environment
     source /etc/environment
